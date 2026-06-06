@@ -1,0 +1,82 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-06-04 12:43:31.133491",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "serveice_provider_information_section",
+  "company",
+  "gateway_details_section",
+  "username",
+  "api_key",
+  "column_break_fhbe",
+  "sender_id"
+ ],
+ "fields": [
+  {
+   "fieldname": "serveice_provider_information_section",
+   "fieldtype": "Section Break",
+   "label": "Serveice Provider Information"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Data",
+   "label": "Company"
+  },
+  {
+   "fieldname": "gateway_details_section",
+   "fieldtype": "Section Break",
+   "label": "Gateway Details"
+  },
+  {
+   "fieldname": "username",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "UserName",
+   "reqd": 1
+  },
+  {
+   "fieldname": "api_key",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "API Key",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_fhbe",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "sender_id",
+   "fieldtype": "Data",
+   "label": "Sender ID"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-06-04 13:06:19.304384",
+ "modified_by": "Administrator",
+ "module": "Sms",
+ "name": "SMS Settings Configurations",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

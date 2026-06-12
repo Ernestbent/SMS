@@ -37,15 +37,15 @@ def normalize_ug_number(number):
     return number
 
 
-def get_customer_number(customer_name):
+def get_customer_number(customer_name, customer=None):
     """
-    Priority:
-    1. mobile_no
-    2. whatsapp_number
+    SMS should only use mobile_no.
+    If a WhatsApp number exists, SMS must be skipped.
     """
 
-    customer = frappe.get_doc("Customer", customer_name)
+    if not customer:
+        if not frappe.db.exists("Customer", customer_name):
+            return None
+        customer = frappe.get_doc("Customer", customer_name)
 
-    number = customer.get("mobile_no") or customer.get("whatsapp_number")
-
-    return normalize_ug_number(number)
+    return normalize_ug_number(customer.get("mobile_no"))

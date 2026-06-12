@@ -7,6 +7,19 @@ def get_sms_settings():
     return frappe.get_single("SMS Settings Configurations")
 
 
+def notify_alert(message, indicator="blue"):
+    frappe.publish_realtime(
+        "msgprint",
+        {
+            "message": message,
+            "indicator": indicator,
+            "alert": True,
+        },
+        user=frappe.session.user,
+        after_commit=True,
+    )
+
+
 def send_sms(number, message, sender_id=None):
     """
     Send SMS directly to a number
@@ -15,19 +28,19 @@ def send_sms(number, message, sender_id=None):
     if not number or not message:
         error = "Invalid number or message"
         frappe.log_error(error, "SMS Validation Error")
-        return error
+        return {"status": "failed", "reason": error}
 
     try:
         settings = get_sms_settings()
     except Exception as e:
         error = "SMS Settings Configuration not found. Please create SMS Settings Configurations."
         frappe.log_error(str(e), error)
-        return error
+        return {"status": "failed", "reason": error}
 
     if not settings.username or not settings.api_key:
         error = "SMS Settings incomplete. Username and API Key are required."
         frappe.log_error(error, "SMS Configuration Error")
-        return error
+        return {"status": "failed", "reason": error}
 
     # use sender_id from settings if not passed
     sender_id = sender_id or settings.sender_id
@@ -65,24 +78,24 @@ def send_sms(number, message, sender_id=None):
         if response.status_code != 200:
             error_msg = f"SMS API returned status {response.status_code}: {response.text}"
             frappe.log_error(error_msg, "SMS API Error")
-            return error_msg
-        
-        return response.text
+            return {"status": "failed", "reason": error_msg}
+
+        return {"status": "sent", "response": response.text}
 
     except requests.exceptions.Timeout:
         error = "SMS sending timeout. API did not respond within 20 seconds."
         frappe.log_error(error, "SMS Timeout")
-        return error
+        return {"status": "failed", "reason": error}
     
     except requests.exceptions.ConnectionError as e:
         error = f"Cannot connect to SMS gateway: {str(e)}"
         frappe.log_error(error, "SMS Connection Error")
-        return error
+        return {"status": "failed", "reason": error}
     
     except Exception as e:
         error = f"SMS sending failed: {str(e)}"
         frappe.log_error(error, "SMS Sending Error")
-        return error
+        return {"status": "failed", "reason": error}
 
 
 def send_sms_to_customer(customer_name, message, sender_id=None):
@@ -90,11 +103,30 @@ def send_sms_to_customer(customer_name, message, sender_id=None):
     High-level function: send SMS using Customer doctype
     """
 
-    number = get_customer_number(customer_name)
+    customer = None
+
+    if customer_name and frappe.db.exists("Customer", customer_name):
+        customer = frappe.get_doc("Customer", customer_name)
+    elif customer_name:
+        customer_docname = frappe.db.get_value(
+            "Customer",
+            {"customer_name": customer_name},
+            "name",
+        )
+        if customer_docname:
+            customer = frappe.get_doc("Customer", customer_docname)
+
+    if not customer:
+        reason = f"Customer {customer_name} not found"
+        frappe.log_error(reason, "SMS Error")
+        return {"status": "skipped", "reason": reason}
+
+    mobile_no = customer.get("mobile_no")
+    number = get_customer_number(customer_name, customer)
 
     if not number:
         frappe.log_error(f"No valid phone number for {customer_name}", "SMS Error")
-        return "No valid number"
+        return {"status": "failed", "reason": "No valid mobile_no"}
 
     return send_sms(number, message, sender_id)
 
@@ -112,11 +144,7 @@ def send_sales_order_sms(doc, method):
                 "SMS Settings Configuration is incomplete. Please configure username and API Key.",
                 "SMS Configuration Error"
             )
-            frappe.msgprint(
-                "SMS Settings not configured. Please setup SMS gateway credentials.",
-                title="SMS Error",
-                indicator="red"
-            )
+            notify_alert("SMS Settings not configured. Please setup SMS gateway credentials.", "red")
             return
 
         # Get customer phone number
@@ -128,12 +156,20 @@ def send_sales_order_sms(doc, method):
         
         # Send SMS to customer
         result = send_sms_to_customer(customer_name, message, sender_id=None)
-        
-        # Log the result for debugging
-        frappe.logger().info(f"SMS sent for SO {doc.name}: {result}")
-        frappe.msgprint(f"SMS notification sent successfully", title="SMS Sent", indicator="green")
+
+        if result.get("status") == "sent":
+            frappe.logger().info(f"SMS sent for SO {doc.name}: {result}")
+            notify_alert("SMS notification sent successfully", "green")
+        elif result.get("status") == "skipped":
+            frappe.logger().info(f"SMS skipped for SO {doc.name}: {result}")
+        else:
+            frappe.log_error(
+                f"Failed to send SMS for Sales Order {doc.name}: {result.get('reason')}",
+                "SMS Sending Failed",
+            )
+            notify_alert(result.get("reason"), "red")
         
     except Exception as e:
         error_msg = f"Failed to send SMS for Sales Order {doc.name}: {str(e)}"
         frappe.log_error(error_msg, "SMS Sending Failed")
-        frappe.msgprint(error_msg, title="SMS Error", indicator="red")
+        notify_alert(error_msg, "red")

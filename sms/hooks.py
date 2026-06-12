@@ -138,9 +138,9 @@ app_license = "mit"
 # Hook on document methods and events
 
 doc_events = {
-    "Sales Order": {
-        "on_submit": "sms.sms.custom_scripts.sms.send_sales_order_sms"
-    },
+    # "Sales Order": {
+    #     "on_submit": "sms.sms.custom_scripts.sms.send_sales_order_sms"
+    # },
     "Payment Entry": {
         "on_submit": "sms.sms.custom_scripts.payment_entry_sms.send_payment_entry_sms"
     },
@@ -152,23 +152,11 @@ doc_events = {
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
-# 	"all": [
-# 		"sms.tasks.all"
-# 	],
-# 	"daily": [
-# 		"sms.tasks.daily"
-# 	],
-# 	"hourly": [
-# 		"sms.tasks.hourly"
-# 	],
-# 	"weekly": [
-# 		"sms.tasks.weekly"
-# 	],
-# 	"monthly": [
-# 		"sms.tasks.monthly"
-# 	],
-# }
+scheduler_events = {
+    "daily": [
+        "sms.sms.custom_scripts.invoice_reminders.send_overdue_invoice_reminders_after_7_days",
+    ],
+}
 
 # Testing
 # -------
@@ -245,4 +233,3 @@ doc_events = {
 # default_log_clearing_doctypes = {
 # 	"Logging DocType Name": 30  # days to retain logs
 # }
-

@@ -1,0 +1,68 @@
+{
+ "charts": [],
+ "content": "[{\"id\":\"9zUt9nmkaG\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Messages</span>\",\"col\":12}},{\"id\":\"WLDFwgIyI4\",\"type\":\"card\",\"data\":{\"card_name\":\"SMS Settings\",\"col\":4}},{\"id\":\"fCzoVwnRYg\",\"type\":\"card\",\"data\":{\"card_name\":\"Messages\",\"col\":4}}]",
+ "creation": "2026-06-04 12:45:06.202679",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "message-1",
+ "idx": 0,
+ "indicator_color": "",
+ "is_hidden": 0,
+ "label": "Sms",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "SMS Settings",
+   "link_count": 1,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Settings",
+   "link_count": 0,
+   "link_to": "SMS Settings Configurations",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Messages",
+   "link_count": 1,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Messages",
+   "link_count": 0,
+   "link_to": "Message",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2026-06-16 13:18:15.036996",
+ "modified_by": "Administrator",
+ "module": "Sms",
+ "name": "Sms",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [],
+ "sequence_id": 33.0,
+ "shortcuts": [],
+ "title": "Sms"
+}

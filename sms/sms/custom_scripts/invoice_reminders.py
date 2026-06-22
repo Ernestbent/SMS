@@ -4,6 +4,7 @@ import frappe
 from frappe.utils import getdate, nowdate
 
 from sms.sms.sms.custom_scripts.sms import get_sms_settings, send_sms_to_customer
+from sms.sms.utils.utils import append_inquiry_contacts, get_customer_short_name
 
 def send_overdue_invoice_reminders_after_7_days():
     """
@@ -47,7 +48,7 @@ def send_overdue_invoice_reminders_after_7_days():
     for invoice in overdue_invoices:
         try:
             customer_name = invoice.customer
-            customer_display_name = invoice.customer_name or customer_name
+            customer_display_name = get_customer_short_name(invoice.customer_name or customer_name)
             days_overdue = (getdate(nowdate()) - getdate(invoice.due_date)).days
             day_label = "day" if days_overdue == 1 else "days"
 
@@ -55,6 +56,7 @@ def send_overdue_invoice_reminders_after_7_days():
                 f"Dear {customer_display_name}, invoice {invoice.name} is {days_overdue} {day_label} overdue. "
                 "Please pay at the earliest. Autozone Professional Limited."
             )
+            message = append_inquiry_contacts(message)
 
             result = send_sms_to_customer(customer_name, message, sender_id=None)
 

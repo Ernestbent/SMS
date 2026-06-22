@@ -1,6 +1,6 @@
 import frappe
 import requests
-from sms.sms.utils.utils import get_customer_number
+from sms.sms.utils.utils import append_inquiry_contacts, get_customer_number, get_customer_short_name
 from datetime import datetime
 
 
@@ -189,7 +189,7 @@ def send_payment_entry_sms(doc, method):
 
 		## Get customer display name for message
 		customer_doc = frappe.get_doc("Customer", customer)
-		customer_name = customer_doc.customer_name
+		customer_name = get_customer_short_name(customer_doc.customer_name or customer)
 
 		## Use reference_no or fallback to Payment Entry name
 		reference = doc.reference_no if doc.reference_no else doc.name
@@ -199,6 +199,7 @@ def send_payment_entry_sms(doc, method):
 			f"Dear {customer_name}, payment of UGX {doc.paid_amount:,.0f}/= processed. "
 			f"Ref: {reference}. Autozone Professional Limited"
 		)
+		message = append_inquiry_contacts(message)
 		
 		## Send SMS
 		result = send_sms_to_customer(
@@ -239,10 +240,11 @@ def send_sales_order_sms(doc, method):
 		## Get customer details
 		customer = doc.customer
 		customer_doc = frappe.get_doc("Customer", customer)
-		customer_name = customer_doc.customer_name
+		customer_name = get_customer_short_name(customer_doc.customer_name or customer)
 		
 		## Build SMS message
 		message = f"Dear {customer_name}, order {doc.name} received. Amount: UGX {doc.grand_total:,.0f}/=. Processing soon. Autozone Professional Limited"
+		message = append_inquiry_contacts(message)
 		
 		## Send SMS
 		result = send_sms_to_customer(

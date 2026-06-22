@@ -1,5 +1,6 @@
 import frappe
 from sms.sms.sms.custom_scripts.sms import get_sms_settings, notify_alert, send_sms_to_customer
+from sms.sms.utils.utils import get_customer_short_name
 
 def send_payment_entry_sms(doc, method):
     """
@@ -24,11 +25,7 @@ def send_payment_entry_sms(doc, method):
 
         # Use 'party' as the link to the Customer document
         customer_id = doc.party  # This is the Customer ID (link field)
-        
-        # Get the actual customer document to get the correct display name
-        customer_doc = frappe.get_doc("Customer", customer_id)
-        customer_display_name = customer_doc.customer_name
-        
+
         # Validate that we have a valid Customer link
         if not customer_id:
             frappe.log_error(
@@ -37,6 +34,10 @@ def send_payment_entry_sms(doc, method):
             )
             notify_alert("Cannot send SMS: No Customer linked to this Payment Entry", "red")
             return
+
+        # Get the actual customer document to get the correct display name
+        customer_doc = frappe.get_doc("Customer", customer_id)
+        customer_display_name = get_customer_short_name(customer_doc.customer_name or customer_id)
         
         # Use payment entry name as reference if reference_no is empty
         reference = doc.reference_no if doc.reference_no else doc.name
@@ -44,6 +45,7 @@ def send_payment_entry_sms(doc, method):
         # Use customer_display_name (actual customer name) in the message
         message = (
             f"Dear {customer_display_name}, payment of UGX {doc.paid_amount:,.0f}/= processed. "
+            f"For more inquiries call 0743045144 or 0764 376747. "
             f"Ref: {reference}. Autozone Professional Limited"
         )
         

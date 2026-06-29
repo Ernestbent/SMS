@@ -144,6 +144,9 @@ doc_events = {
     "Payment Entry": {
         "on_submit": "sms.sms.custom_scripts.payment_entry_sms.send_payment_entry_sms"
     },
+    "Comment": {
+        "after_insert": "sms.sms.custom_scripts.comment_sms.send_comment_sms_to_credit_controller"
+    },
     # "Delivery Note": {
     #     "on_submit": "sms.sms.custom_scripts.sms.send_delivery_sms"
     # }

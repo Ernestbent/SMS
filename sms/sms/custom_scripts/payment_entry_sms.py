@@ -1,5 +1,5 @@
 import frappe
-from sms.sms.sms.custom_scripts.sms import get_sms_settings, notify_alert, send_sms_to_customer
+from sms.sms.custom_scripts.sms import get_sms_settings, notify_alert, send_sms_to_customer
 from sms.sms.utils.utils import get_customer_short_name
 
 def send_payment_entry_sms(doc, method):

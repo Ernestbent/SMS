@@ -98,10 +98,7 @@ def build_comment_message(comment_doc, customer_name):
     reference = f"{comment_doc.reference_doctype} {comment_doc.reference_name}"
     author = comment_doc.comment_by or comment_doc.comment_email or comment_doc.owner or "Unknown user"
 
-    return (
-        f"{author} commented on {reference} for customer {customer_name}: "
-        f"{comment_text}"
-    )
+    return f"{author} commented on {reference} for customer {customer_name}: {comment_text}"
 
 
 def get_reference_owner(comment_doc):
@@ -132,7 +129,6 @@ def get_comment_recipients(comment_doc):
         if row.parent != commenter:
             recipients.append(row.parent)
 
-    # Keep unique recipients while preserving order.
     seen = set()
     unique_recipients = []
     for user_id in recipients:
@@ -178,9 +174,7 @@ def send_comment_sms_to_credit_controller(doc, method=None):
 
         customer = resolve_customer_from_reference(doc)
         if not customer:
-            frappe.logger().info(
-                f"Skipping comment SMS for {doc.name}: no customer could be resolved"
-            )
+            frappe.logger().info(f"Skipping comment SMS for {doc.name}: no customer could be resolved")
             return
 
         customer_label = frappe.db.get_value("Customer", customer, "customer_name") or customer
@@ -216,9 +210,7 @@ def send_comment_sms_to_credit_controller(doc, method=None):
             else:
                 skipped_count += 1
 
-        frappe.logger().info(
-            f"Comment SMS processed for {doc.name}: sent={sent_count}, skipped={skipped_count}"
-        )
+        frappe.logger().info(f"Comment SMS processed for {doc.name}: sent={sent_count}, skipped={skipped_count}")
 
     except Exception as e:
         frappe.log_error(

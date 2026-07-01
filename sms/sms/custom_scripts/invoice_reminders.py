@@ -3,7 +3,7 @@ from datetime import timedelta
 import frappe
 from frappe.utils import getdate, nowdate
 
-from sms.sms.custom_scripts.sms import get_sms_settings, send_sms_to_customer
+from sms.sms.custom_scripts.sms_message import get_sms_settings, send_sms_to_customer
 from sms.sms.utils.utils import append_inquiry_contacts, get_customer_short_name
 
 def send_overdue_invoice_reminders_after_7_days():

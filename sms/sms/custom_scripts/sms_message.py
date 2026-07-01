@@ -1,7 +1,8 @@
+from datetime import datetime
+
 import frappe
 import requests
 from sms.sms.utils.utils import append_inquiry_contacts, get_customer_number, get_customer_short_name
-from datetime import datetime
 
 
 def get_sms_settings():
@@ -34,7 +35,7 @@ def create_message_record(customer, message, status="sent", reference_doctype=No
 		message_doc = frappe.get_doc({
 			"doctype": "Message",
 			"customer": customer,
-			"message": message,
+			"message": message[:200],
 			"date": datetime.now().date(),
 			"time": datetime.now().time().strftime("%H:%M:%S"),
 			"status": status

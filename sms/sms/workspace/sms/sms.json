@@ -52,7 +52,7 @@
    "type": "Link"
   }
  ],
- "modified": "2026-06-16 13:18:15.036996",
+ "modified": "2026-07-05 21:07:26.249282",
  "modified_by": "Administrator",
  "module": "Sms",
  "name": "Sms",
@@ -62,7 +62,7 @@
  "public": 1,
  "quick_lists": [],
  "roles": [],
- "sequence_id": 33.0,
+ "sequence_id": 34.0,
  "shortcuts": [],
  "title": "Sms"
 }

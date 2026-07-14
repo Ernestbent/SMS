@@ -1,14 +1,15 @@
 from datetime import timedelta
 
 import frappe
-from frappe.utils import getdate, nowdate
+from frappe.utils import flt, getdate, nowdate
 
 from sms.sms.custom_scripts.sms_message import get_sms_settings, send_sms_to_customer
 from sms.sms.utils.utils import append_inquiry_contacts, get_customer_short_name
 
+
 def send_overdue_invoice_reminders_after_7_days():
     """
-    Send a single SMS reminder for unpaid Sales Invoices that are 7 days overdue.
+    Send one daily SMS per customer with their total for invoices at least 7 days old.
     """
     try:
         settings = get_sms_settings()
@@ -26,34 +27,46 @@ def send_overdue_invoice_reminders_after_7_days():
         )
         return
 
-    reminder_date = getdate(nowdate()) - timedelta(days=7)
+    today = getdate(nowdate())
+    reminder_date = today - timedelta(days=7)
 
     overdue_invoices = frappe.get_all(
         "Sales Invoice",
         filters={
             "docstatus": 1,
             "outstanding_amount": [">", 0],
-            "due_date": reminder_date,
+            "posting_date": ["<=", reminder_date],
         },
         fields=[
-            "name",
             "customer",
             "customer_name",
             "outstanding_amount",
-            "due_date",
         ],
-        order_by="due_date asc",
+        order_by="customer asc",
     )
 
+    customer_totals = {}
     for invoice in overdue_invoices:
+        customer = customer_totals.setdefault(
+            invoice.customer,
+            {
+                "customer_name": invoice.customer_name or invoice.customer,
+                "invoice_count": 0,
+                "outstanding_amount": 0,
+            },
+        )
+        customer["invoice_count"] += 1
+        customer["outstanding_amount"] += flt(invoice.outstanding_amount)
+
+    for customer_name, outstanding in customer_totals.items():
         try:
-            customer_name = invoice.customer
-            customer_display_name = get_customer_short_name(invoice.customer_name or customer_name)
-            days_overdue = (getdate(nowdate()) - getdate(invoice.due_date)).days
-            day_label = "day" if days_overdue == 1 else "days"
+            customer_display_name = get_customer_short_name(outstanding["customer_name"])
+            invoice_label = "invoice" if outstanding["invoice_count"] == 1 else "invoices"
 
             message = (
-                f"Dear {customer_display_name}, invoice {invoice.name} is {days_overdue} {day_label} overdue. "
+                f"Dear {customer_display_name}, your total outstanding balance for "
+                f"{outstanding['invoice_count']} {invoice_label} aged 7 days or more is "
+                f"UGX {outstanding['outstanding_amount']:,.0f}/=. "
                 "Please pay at the earliest. Autozone Professional Limited."
             )
             message = append_inquiry_contacts(message)
@@ -61,16 +74,16 @@ def send_overdue_invoice_reminders_after_7_days():
             result = send_sms_to_customer(customer_name, message, sender_id=None)
 
             if result.get("status") == "sent":
-                frappe.logger().info(f"7-day overdue reminder sent for {invoice.name}: {result}")
+                frappe.logger().info(f"Outstanding reminder sent to {customer_name}: {result}")
             elif result.get("status") == "skipped":
-                frappe.logger().info(f"7-day overdue reminder skipped for {invoice.name}: {result}")
+                frappe.logger().info(f"Outstanding reminder skipped for {customer_name}: {result}")
             else:
                 frappe.log_error(
-                    f"Failed to send 7-day overdue reminder for {invoice.name}: {result.get('reason')}",
+                    f"Failed to send outstanding reminder to {customer_name}: {result.get('reason')}",
                     "Invoice Reminder Error",
                 )
         except Exception as e:
             frappe.log_error(
-                f"7-day overdue reminder crashed for {invoice.name}: {str(e)}",
+                f"Outstanding reminder crashed for {customer_name}: {str(e)}",
                 "Invoice Reminder Error",
             )

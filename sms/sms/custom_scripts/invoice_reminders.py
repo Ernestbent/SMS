@@ -7,6 +7,9 @@ from sms.sms.custom_scripts.sms_message import get_sms_settings, send_sms_to_cus
 from sms.sms.utils.utils import append_inquiry_contacts, get_customer_short_name
 
 
+MINIMUM_OUTSTANDING_AMOUNT = 1000
+
+
 def send_overdue_invoice_reminders_after_7_days():
     """
     Send one daily SMS per customer with their total for invoices at least 7 days old.
@@ -60,6 +63,13 @@ def send_overdue_invoice_reminders_after_7_days():
 
     for customer_name, outstanding in customer_totals.items():
         try:
+            if outstanding["outstanding_amount"] < MINIMUM_OUTSTANDING_AMOUNT:
+                frappe.logger().info(
+                    f"Outstanding reminder skipped for {customer_name}: "
+                    f"balance below UGX {MINIMUM_OUTSTANDING_AMOUNT:,.0f}"
+                )
+                continue
+
             customer_display_name = get_customer_short_name(outstanding["customer_name"])
             invoice_label = "invoice" if outstanding["invoice_count"] == 1 else "invoices"
 

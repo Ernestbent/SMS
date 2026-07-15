@@ -39,14 +39,11 @@ def send_payment_entry_sms(doc, method):
         customer_doc = frappe.get_doc("Customer", customer_id)
         customer_display_name = get_customer_short_name(customer_doc.customer_name or customer_id)
         
-        # Use payment entry name as reference if reference_no is empty
-        reference = doc.reference_no if doc.reference_no else doc.name
-
         # Use customer_display_name (actual customer name) in the message
         message = (
-            f"Dear {customer_display_name}, payment of UGX {doc.paid_amount:,.0f}/= processed. "
-            f"For more inquiries call 0743045144 or 0764 376747. "
-            f"Ref: {reference}. Autozone Professional Limited"
+            f"Autozone: Dear {customer_display_name}, payment of UGX "
+            f"{doc.paid_amount:,.0f}/= processed. "
+            "Call 0743045144 or 0764 376747."
         )
         
         # Send SMS using customer_id (the actual link)

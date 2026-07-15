@@ -4,7 +4,7 @@ import frappe
 from frappe.utils import flt, getdate, nowdate
 
 from sms.sms.custom_scripts.sms_message import get_sms_settings, send_sms_to_customer
-from sms.sms.utils.utils import append_inquiry_contacts, get_customer_short_name
+from sms.sms.utils.utils import get_customer_short_name
 
 
 MINIMUM_OUTSTANDING_AMOUNT = 1000
@@ -71,15 +71,11 @@ def send_overdue_invoice_reminders_after_7_days():
                 continue
 
             customer_display_name = get_customer_short_name(outstanding["customer_name"])
-            invoice_label = "invoice" if outstanding["invoice_count"] == 1 else "invoices"
-
             message = (
-                f"Dear {customer_display_name}, your total outstanding balance for "
-                f"{outstanding['invoice_count']} {invoice_label} aged 7 days or more is "
-                f"UGX {outstanding['outstanding_amount']:,.0f}/=. "
-                "Please pay at the earliest. Autozone Professional Limited."
+                f"Autozone: Dear {customer_display_name}, "
+                f"UGX {outstanding['outstanding_amount']:,.0f} is overdue. "
+                "Kindly pay as soon as possible. Call 0764376747, 0743045144."
             )
-            message = append_inquiry_contacts(message)
 
             result = send_sms_to_customer(customer_name, message, sender_id=None)
 

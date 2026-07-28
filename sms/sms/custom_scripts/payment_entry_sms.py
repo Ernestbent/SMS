@@ -2,6 +2,34 @@ import frappe
 from sms.sms.custom_scripts.sms_message import get_sms_settings, notify_alert, send_sms_to_customer
 from sms.sms.utils.utils import get_customer_short_name
 
+
+def get_payment_messages(customer_display_name, paid_amount, region):
+    messages = [
+        (
+            "English",
+            (
+                f"Autozone: Dear {customer_display_name}, payment of UGX "
+                f"{paid_amount:,.0f}/= processed. "
+                "Call 0743045144 or 0764 376747."
+            ),
+        )
+    ]
+
+    if str(region or "").strip().casefold() == "central":
+        messages.append(
+            (
+                "Luganda",
+                (
+                    f"Autozone: Owange {customer_display_name}, tusanyuse okukutegeeza nti "
+                    f"okusasula kwa UGX {paid_amount:,.0f}/= kufuniddwa. "
+                    "Bw'oba oyagala obuyambi, kuba essimu ku 0743045144 oba 0764 376747."
+                ),
+            )
+        )
+
+    return messages
+
+
 def send_payment_entry_sms(doc, method):
     """
     Send SMS on Payment Entry submission
@@ -38,34 +66,48 @@ def send_payment_entry_sms(doc, method):
         # Get the actual customer document to get the correct display name
         customer_doc = frappe.get_doc("Customer", customer_id)
         customer_display_name = get_customer_short_name(customer_doc.customer_name or customer_id)
-        
-        # Use customer_display_name (actual customer name) in the message
-        message = (
-            f"Autozone: Dear {customer_display_name}, payment of UGX "
-            f"{doc.paid_amount:,.0f}/= processed. "
-            "Call 0743045144 or 0764 376747."
-        )
-        
-        # Send SMS using customer_id (the actual link)
-        result = send_sms_to_customer(
-            customer_id,  # This is the Customer ID (e.g., CUST-2026-02885)
-            message, 
-            sender_id=None,
-            reference_doctype="Payment Entry",
-            reference_name=doc.name
+        messages = get_payment_messages(
+            customer_display_name,
+            doc.paid_amount,
+            customer_doc.get("region"),
         )
 
-        if result.get("status") == "sent":
-            frappe.logger().info(f"SMS sent for Payment Entry {doc.name} to customer {customer_display_name}")
-            notify_alert("Payment SMS sent successfully", "green")
-        elif result.get("status") == "skipped":
-            frappe.logger().info(f"SMS skipped for Payment Entry {doc.name}: {result.get('reason')}")
-        else:
-            frappe.log_error(
-                f"SMS failed for Payment Entry {doc.name}: {result.get('reason')}",
-                "SMS Failed",
+        sent_count = 0
+        skipped_count = 0
+        for language, message in messages:
+            result = send_sms_to_customer(
+                customer_id,
+                message,
+                sender_id=None,
+                reference_doctype="Payment Entry",
+                reference_name=doc.name,
             )
-            notify_alert(f"SMS failed: {result.get('reason')}", "red")
+
+            if result.get("status") == "sent":
+                sent_count += 1
+                frappe.logger().info(
+                    f"{language} SMS sent for Payment Entry {doc.name} "
+                    f"to customer {customer_display_name}"
+                )
+            elif result.get("status") == "skipped":
+                skipped_count += 1
+                frappe.logger().info(
+                    f"{language} SMS skipped for Payment Entry {doc.name}: "
+                    f"{result.get('reason')}"
+                )
+            else:
+                frappe.log_error(
+                    f"{language} SMS failed for Payment Entry {doc.name}: "
+                    f"{result.get('reason')}",
+                    "SMS Failed",
+                )
+
+        if sent_count == len(messages):
+            notify_alert("Payment SMS sent successfully", "green")
+        elif sent_count:
+            notify_alert(f"Only {sent_count} of {len(messages)} payment SMS messages sent", "orange")
+        elif skipped_count != len(messages):
+            notify_alert("Payment SMS failed", "red")
         
     except Exception as e:
         error_msg = f"SMS error for Payment Entry {doc.name}: {str(e)[:100]}"

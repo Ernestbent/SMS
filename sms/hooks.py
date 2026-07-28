@@ -156,9 +156,11 @@ doc_events = {
 # ---------------
 
 scheduler_events = {
-    "weekly": [
-        "sms.sms.custom_scripts.invoice_reminders.send_overdue_invoice_reminders_after_7_days",
-    ],
+    "cron": {
+        "0 8 * * 0": [
+            "sms.sms.custom_scripts.invoice_reminders.send_overdue_invoice_reminders_after_7_days",
+        ],
+    },
 }
 
 # Testing

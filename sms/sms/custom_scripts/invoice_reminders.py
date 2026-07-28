@@ -10,6 +10,34 @@ from sms.sms.utils.utils import get_customer_short_name
 MINIMUM_OUTSTANDING_AMOUNT = 1000
 
 
+def get_outstanding_reminder_messages(customer_display_name, outstanding_amount, region):
+    messages = [
+        (
+            "English",
+            (
+                f"Autozone: Dear {customer_display_name}, "
+                f"UGX {outstanding_amount:,.0f} is overdue. "
+                "Kindly pay as soon as possible. Call 0764376747, 0743045144."
+            ),
+        )
+    ]
+
+    if str(region or "").strip().casefold() == "central":
+        messages.append(
+            (
+                "Luganda",
+                (
+                    f"Autozone: Owange {customer_display_name}, "
+                    f"osigazza okusasula UGX {outstanding_amount:,.0f}/=. "
+                    "Tusaba okusasula mangu nga bwe kisoboka. "
+                    "Bw'oba weetaaga obuyambi, tukubire ku 0764376747 oba 0743045144."
+                ),
+            )
+        )
+
+    return messages
+
+
 def send_overdue_invoice_reminders_after_7_days():
     """
     Send one daily SMS per customer with their total for invoices at least 7 days old.
@@ -71,23 +99,30 @@ def send_overdue_invoice_reminders_after_7_days():
                 continue
 
             customer_display_name = get_customer_short_name(outstanding["customer_name"])
-            message = (
-                f"Autozone: Dear {customer_display_name}, "
-                f"UGX {outstanding['outstanding_amount']:,.0f} is overdue. "
-                "Kindly pay as soon as possible. Call 0764376747, 0743045144."
+            region = frappe.db.get_value("Customer", customer_name, "region")
+            messages = get_outstanding_reminder_messages(
+                customer_display_name,
+                outstanding["outstanding_amount"],
+                region,
             )
 
-            result = send_sms_to_customer(customer_name, message, sender_id=None)
+            for language, message in messages:
+                result = send_sms_to_customer(customer_name, message, sender_id=None)
 
-            if result.get("status") == "sent":
-                frappe.logger().info(f"Outstanding reminder sent to {customer_name}: {result}")
-            elif result.get("status") == "skipped":
-                frappe.logger().info(f"Outstanding reminder skipped for {customer_name}: {result}")
-            else:
-                frappe.log_error(
-                    f"Failed to send outstanding reminder to {customer_name}: {result.get('reason')}",
-                    "Invoice Reminder Error",
-                )
+                if result.get("status") == "sent":
+                    frappe.logger().info(
+                        f"{language} outstanding reminder sent to {customer_name}: {result}"
+                    )
+                elif result.get("status") == "skipped":
+                    frappe.logger().info(
+                        f"{language} outstanding reminder skipped for {customer_name}: {result}"
+                    )
+                else:
+                    frappe.log_error(
+                        f"Failed to send {language} outstanding reminder to "
+                        f"{customer_name}: {result.get('reason')}",
+                        "Invoice Reminder Error",
+                    )
         except Exception as e:
             frappe.log_error(
                 f"Outstanding reminder crashed for {customer_name}: {str(e)}",

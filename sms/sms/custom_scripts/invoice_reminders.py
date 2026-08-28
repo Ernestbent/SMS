@@ -15,9 +15,9 @@ def get_outstanding_reminder_messages(customer_display_name, outstanding_amount,
         (
             "English",
             (
-                f"Autozone: Dear {customer_display_name}, "
+                f"Autozone: Mr/Ms {customer_display_name}, "
                 f"UGX {outstanding_amount:,.0f} is overdue. "
-                "Kindly pay as soon as possible. Call 0764376747, 0743045144."
+                "Kindly pay as soon as possible. Thank you"
             ),
         )
     ]
@@ -27,10 +27,10 @@ def get_outstanding_reminder_messages(customer_display_name, outstanding_amount,
             (
                 "Luganda",
                 (
-                    f"Autozone: Owange {customer_display_name}, "
-                    f"osigazza okusasula UGX {outstanding_amount:,.0f}/=. "
-                    "Tusaba okusasula mangu nga bwe kisoboka. "
-                    "Bw'oba weetaaga obuyambi, tukubire ku 0764376747 oba 0743045144."
+                    f"Autozone: Mr/Ms {customer_display_name}, "
+                    f"obanjibwa UGX {outstanding_amount:,.0f}/=. "
+                    "Tukujuza okusasula mubwangu. "
+                    "Tweyanziza"
                 ),
             )
         )

@@ -8,9 +8,8 @@ def get_payment_messages(customer_display_name, paid_amount, region):
         (
             "English",
             (
-                f"Autozone: Dear {customer_display_name}, payment of UGX "
-                f"{paid_amount:,.0f}/= processed. "
-                "Call 0743045144 or 0764 376747."
+                f"Autozone: Mr/Ms {customer_display_name}, payment of UGX "
+                f"{paid_amount:,.0f}/= has been received. Thank you"
             ),
         )
     ]
@@ -20,9 +19,8 @@ def get_payment_messages(customer_display_name, paid_amount, region):
             (
                 "Luganda",
                 (
-                    f"Autozone: Owange {customer_display_name}, tusanyuse okukutegeeza nti "
-                    f"okusasula kwa UGX {paid_amount:,.0f}/= kufuniddwa. "
-                    "Bw'oba oyagala obuyambi, kuba essimu ku 0743045144 oba 0764 376747."
+                    f"Autozone: Mr/Ms {customer_display_name}, tweyanziza, tukutegeza nti "
+                    f"okusasula kwa UGX {paid_amount:,.0f}/= kufuniddwa."
                 ),
             )
         )

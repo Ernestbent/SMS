@@ -138,7 +138,7 @@ app_license = "mit"
 # Hook on document methods and events
 
 doc_events = {
-    # "Sales Order": {
+    # "Sales Order": {a
     #     "on_submit": "sms.sms.custom_scripts.sms.send_sales_order_sms"
     # },
     "Payment Entry": {
@@ -155,13 +155,13 @@ doc_events = {
 # Scheduled Tasks
 # ---------------
 
-scheduler_events = {
-    "cron": {
-        "0 8 * * 0": [
-            "sms.sms.custom_scripts.invoice_reminders.send_overdue_invoice_reminders_after_7_days",
-        ],
-    },
-}
+# scheduler_events = {
+#     "cron": {
+#         "0 8 * * 0": [
+#             "sms.sms.custom_scripts.invoice_reminders.send_overdue_invoice_reminders_after_7_days",
+#         ],
+#     },
+# }
 
 # Testing
 # -------

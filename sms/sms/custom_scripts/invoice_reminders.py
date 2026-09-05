@@ -29,7 +29,7 @@ def get_outstanding_reminder_messages(customer_display_name, outstanding_amount,
                 (
                     f"Autozone: Mr/Ms {customer_display_name}, "
                     f"obanjibwa UGX {outstanding_amount:,.0f}/=. "
-                    "Tukujuza okusasula mubwangu. "
+                    "Tukujukiza okusasula mubwangu. "
                     "Tweyanziza"
                 ),
             )
